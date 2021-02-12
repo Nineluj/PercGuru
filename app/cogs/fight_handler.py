@@ -1,9 +1,9 @@
 from discord.ext import commands
 import logging
-from models.core import Fight, Player, Guild
+from app.models.core import Fight, Player, Guild
 from tortoise.exceptions import DoesNotExist
 
-from cogs.base import BaseCog
+from app.cogs.base import BaseCog
 
 log = logging.getLogger(__name__)
 

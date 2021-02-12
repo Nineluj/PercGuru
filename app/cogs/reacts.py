@@ -3,9 +3,9 @@ import discord
 import tortoise.exceptions
 
 from discord.ext import commands
-from cogs.base import BaseCog
-from models.core import Fight
-from models.core import Player, Guild
+from app.cogs.base import BaseCog
+from app.models.core import Fight
+from app.models.core import Player, Guild
 
 
 log = logging.getLogger(__name__)

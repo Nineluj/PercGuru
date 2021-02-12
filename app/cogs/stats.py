@@ -1,6 +1,6 @@
 import matplotlib
 from discord.ext import commands
-from cogs.base import BaseCog
+from app.cogs.base import BaseCog
 
 
 class StatsCog(BaseCog):

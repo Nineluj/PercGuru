@@ -3,7 +3,7 @@ from discord.ext import commands, tasks
 from random import choice
 
 
-from cogs.base import BaseCog
+from app.cogs.base import BaseCog
 
 
 lines = [

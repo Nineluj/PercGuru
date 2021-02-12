@@ -5,14 +5,14 @@ from collections import namedtuple
 from sys import stdout
 import logging
 
-from state.state import AppState
-from data import db
-from help_command import MyHelpCommand
-from cogs.configuration import ConfigurationCog
-from cogs.stats import StatsCog
-from cogs.reacts import ReactsCog
-from cogs.fight_handler import FightRegistrationCog
-from cogs.memes import MemeCog
+from app.state import AppState
+from app.data import db
+from app.help_format import MyHelpCommand
+from app.cogs.configuration import ConfigurationCog
+from app.cogs.stats import StatsCog
+from app.cogs.reacts import ReactsCog
+from app.cogs.fight_handler import FightRegistrationCog
+from app.cogs.memes import MemeCog
 
 TOKEN = getenv("BOT_TOKEN")
 LOG_FILE = getenv("LOG_FILE", "perc.log")

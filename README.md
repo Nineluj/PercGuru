@@ -10,7 +10,7 @@
 podman run -p 5432:5432 --name some-postgres -e POSTGRES_PASSWORD=mysecretpassword -d postgres
 ```
 
-2. (Optional but recommended) Create a virtual environment
+2. (Recommended) Create a virtual environment
 ```shell
 python3 -m venv venv
 source venv/bin/activate

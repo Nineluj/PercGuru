@@ -1,7 +1,7 @@
 import asyncio
 import discord
 from discord.ext import commands
-from state.state import AppState
+from app.state import AppState
 
 
 ACK_REACTION = "🆗"

@@ -1,7 +1,7 @@
 from discord.ext import commands
 import discord
 
-from cogs.base import BaseCog
+from app.cogs.base import BaseCog
 
 
 class ConfigurationCog(BaseCog, name="Configuration"):
