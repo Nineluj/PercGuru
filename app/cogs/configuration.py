@@ -1,23 +1,20 @@
 from discord.ext import commands
 import discord
 
+from cogs.base import BaseCog
 
-class ConfigurationCog(commands.Cog, name="Configuration"):
-    def __init__(self, dao, **other):
-        self.dao = dao
-        super().__init__(**other)
 
+class ConfigurationCog(BaseCog, name="Configuration"):
     """
     Commands for configuring the bot
     """
-    @commands.group()
+    @commands.command(name="channel")
+    async def set_listen_channel(self, channel_id):
+        raise Exception("Not implemented")
+
+    @commands.group(name="config")
     async def config(self, ctx):
-        """
-        Commands for managing the bot.
-        """
-        if ctx.invoked_subcommand is None:
-            await ctx.send("Not a full command")
-            return False
+        pass
 
     @config.command(name="guilds")
     async def configure_alliance_guilds(self, ctx, message_id):

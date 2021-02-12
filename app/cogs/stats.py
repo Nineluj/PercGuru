@@ -1,12 +1,9 @@
 import matplotlib
 from discord.ext import commands
+from cogs.base import BaseCog
 
 
-class StatsCog(commands.Cog):
-    def __init__(self, dao, **other):
-        self.dao = dao
-        super().__init__(**other)
-
+class StatsCog(BaseCog):
     # @commands.command(name="bar-chart")
     # async def bar_chart(self):
     #     pass
