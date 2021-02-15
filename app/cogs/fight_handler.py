@@ -7,8 +7,6 @@ from app.cogs.base import BaseCog
 
 log = logging.getLogger(__name__)
 
-# TODO here:
-
 
 class FightRegistrationCog(BaseCog):
     @commands.Cog.listener()
@@ -16,10 +14,7 @@ class FightRegistrationCog(BaseCog):
         if self.is_bot(payload.member.id):
             return
 
-        if not self.state.is_whitelisted(payload.guild_id, payload.channel_id):
-            return
-
-        if not self.state.is_setup(payload.guild_id):
+        if not self.state.is_whitelisted_channel(payload.guild_id, payload.channel_id):
             return
 
         # TODO Implement logic here: find if fight was recorded and delete info about
@@ -38,14 +33,14 @@ class FightRegistrationCog(BaseCog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        # TODO: check channel
+        if self.is_bot(message.author.id):
+            return
+        if not self.state.is_whitelisted_channel(message.guild.id, message.channel.id):
+            return
 
         if len(message.attachments) == 1 and message.attachments[0].filename.endswith(".png"):
             await Fight.create(id=message.id, recorded=message.created_at)
             await self.ack(message)
-
-        # TODO: check that its on a whitelisted channel and that it includes an image
-        # raise Exception("not implemented")
 
     async def process_backlog(self):
         pass

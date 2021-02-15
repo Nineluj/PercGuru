@@ -89,9 +89,6 @@ class AppState:
     def is_setup(self, guild_id):
         return guild_id in self.__guilds and self.__guilds[guild_id].is_setup
 
-    def is_whitelisted(self, guild_id, channel_id):
-        return guild_id in self.__guilds and channel_id in self.__guilds[guild_id].listen_channels
-
     async def is_whitelisted_channel(self, guild_id, channel_id):
         if guild_id not in self.__guilds:
             log.warning(f"Guild with ID {guild_id} is not in state")
@@ -128,6 +125,17 @@ class AppState:
 
         return True
 
+    async def clear_channels(self, guild_id):
+        if guild_id not in self.__guilds:
+            log.warning(f"Guild with ID {guild_id} is not in state")
+            return False
+
+        guild = await Guild.get(id=guild_id)
+        for chan in await guild.whitelisted_channels:
+            await chan.delete()
+
+        return True
+
     async def list_channels(self, guild_id):
         if guild_id not in self.__guilds:
             log.warning(f"Guild with ID {guild_id} is not in state")
@@ -148,4 +156,11 @@ class AppState:
 
         self.__guilds[guild_id] = (True, guild_inst)
         return True
+
+    async def get_react_message(self, guild_id):
+        """
+        :return: Tuple of the channel_id, message_id
+        """
+        is_setup, guild_inst = self.__guilds[guild_id]
+        return guild_inst.react_message_channel_id, guild_inst.react_message_id
 

@@ -24,11 +24,6 @@ class ReactsCog(BaseCog):
         raise Exception("not implemented")
 
     @commands.Cog.listener()
-    async def on_guild_join(self, guild):
-        # TODO handle this, bot is already running and gets added to server
-        raise Exception("not implemented")
-
-    @commands.Cog.listener()
     async def on_ready(self):
         guilds = []
         for g in self.bot.guilds:

@@ -32,8 +32,11 @@ class ConfigurationCog(
     async def channel_join(self, channel: discord.TextChannel):
         return await self.state.add_channel(channel.guild.id, channel.id)
 
-    async def channels_list(self, channel: discord.TextChannel):
-        return await self.state.list_channels(channel.guild.id)
+    async def channels_list(self, guild: discord.Guild):
+        return await self.state.list_channels(guild.id)
+
+    async def channels_clear(self, guild: discord.Guild):
+        return await self.state.clear_channels(guild.id)
 
     def channels_to_str(self, channels):
         lines = []
@@ -53,8 +56,10 @@ class ConfigurationCog(
             result = await self.channel_join(ctx.message.channel)
         elif args[0] == 'leave':
             result = await self.channel_leave(ctx.message.channel)
+        elif args[0] == 'clear':
+            result = await self.channels_clear(ctx.guild)
         elif args[0] == 'list':
-            channels, result = await self.channels_list(ctx.message.channel)
+            channels, result = await self.channels_list(ctx.guild)
             if len(channels) == 0:
                 await ctx.send("Not listening on any channels")
                 return
@@ -69,15 +74,6 @@ class ConfigurationCog(
             await self.ack(ctx.message, keep=True)
         else:
             await self.error(ctx.channel, "Could not complete operation")
-
-
-    # @commands.Cog.listener()
-    # async def on_message_edit(self, before, after):
-    #     # TODO: This is kinda half baked, should figure out what I want to do here
-    #     try:
-    #         await self.bot.process_commands(after)
-    #     except:
-    #         pass
 
     @config.command(name="guilds")
     @commands.is_owner()
@@ -105,21 +101,3 @@ class ConfigurationCog(
             await ctx.send("Reaction message updated successfully.")
         else:
             await self.error(ctx.channel, "Unable to use that message to configure the teams")
-
-        # print(reacted_message)
-        #
-        # # if we wanted to get the users
-        # guild_directory = {}
-        # for react in reacted_message.reactions:
-        #     g_name = react.emoji.name
-        #
-        #     guild_members = []
-        #     for user in await react.users().flatten():
-        #         guild_members.append(user)
-        #
-        #     guild_directory[g_name] = guild_members
-        #
-        # guild_member_counts = [f"{name} with {len(members)} member{'s' if len(members) == 1 else ''}"
-        #                        for name, members in guild_directory.items()]
-        # guild_overview = "\n".join(guild_member_counts)
-        # await ctx.send(f"Configured. ```{guild_overview}```")
