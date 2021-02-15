@@ -38,7 +38,7 @@ class BaseCog(commands.Cog):
 
     async def get_guild_team_emojis(self, guild_id):
         # TODO: cache this?
-        channel_id, message_id = self.state.get_react_message(guild_id)
+        channel_id, message_id = await self.state.get_react_message(guild_id)
         channel: discord.TextChannel = self.bot.get_channel(channel_id)
         reacted_message = await channel.fetch_message(message_id)
 

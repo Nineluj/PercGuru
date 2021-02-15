@@ -35,7 +35,7 @@ class FightRegistrationCog(BaseCog):
     async def on_message(self, message):
         if self.is_bot(message.author.id):
             return
-        if not self.state.is_whitelisted_channel(message.guild.id, message.channel.id):
+        if not await self.state.is_whitelisted_channel(message.guild.id, message.channel.id):
             return
 
         if len(message.attachments) == 1 and message.attachments[0].filename.endswith(".png"):

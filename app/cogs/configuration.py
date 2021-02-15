@@ -77,27 +77,38 @@ class ConfigurationCog(
 
     @config.command(name="guilds")
     @commands.is_owner()
-    async def configure_guild_teams(self, ctx, message_id):
+    async def configure_guild_teams(self, ctx, *args):
         """
         Sets the guilds for this discord server based on the names of the reacts to the given message
-        :param message_id: The ID of the message that has only the reacts of all the guilds
         """
 
-        try:
-            reacted_message = await ctx.fetch_message(message_id)
-        except discord.NotFound:
-            await ctx.send("Can't find the message with that ID. Try again.")
-            return False
-        except discord.Forbidden:
-            await ctx.send("Can't access that message.")
-            return False
-        except discord.HTTPException:
-            await ctx.send("Womp womp")
-            return False
+        if len(args) == 0:
+            await self.error(ctx.channel, "Missing arguments")
+            return
+        elif args[0] == 'list':
+            emojis = await self.get_guild_team_emojis(ctx.guild.id)
+            await ctx.send("Registered guilds are:\n" + "\n".join(emojis))
+        elif args[0] == 'set':
+            if len(args) != 2:
+                await self.error(ctx.channel, "Use: set <message_id>")
+                return
 
-        result = await self.state.set_react_message(ctx.guild.id, ctx.channel.id, reacted_message.id)
-        if result:
-            await self.ack(ctx.message, keep=True)
-            await ctx.send("Reaction message updated successfully.")
-        else:
-            await self.error(ctx.channel, "Unable to use that message to configure the teams")
+            message_id = args[1]
+            try:
+                reacted_message = await ctx.fetch_message(message_id)
+            except discord.NotFound:
+                await ctx.send("Can't find the message with that ID. Try again.")
+                return False
+            except discord.Forbidden:
+                await ctx.send("Can't access that message.")
+                return False
+            except discord.HTTPException:
+                await ctx.send("Womp womp")
+                return False
+
+            result = await self.state.set_react_message(ctx.guild.id, ctx.channel.id, reacted_message.id)
+            if result:
+                await self.ack(ctx.message, keep=True)
+                await ctx.send("Reaction message updated successfully.")
+            else:
+                await self.error(ctx.channel, "Unable to use that message to configure the teams")
