@@ -12,8 +12,8 @@ class Fight(Model):
     )
 
 
-class Guild(Model):
-    server = fields.ForeignKeyField('models.Server', related_name='guilds')
+class Team(Model):
+    server = fields.ForeignKeyField('models.Guild', related_name='teams')
     id = fields.IntField(pk=True)
     name = fields.CharField(unique=True, max_length=20)
     members: fields.ReverseRelation["Player"]
@@ -22,7 +22,7 @@ class Guild(Model):
 class Player(Model):
     id = fields.IntField(pk=True)
     name = fields.TextField()
-    guild = fields.ForeignKeyField('models.Guild', related_name='members')
+    guild = fields.ForeignKeyField('models.Team', related_name='members')
     fights: fields.ManyToManyRelation[Fight]
 
 

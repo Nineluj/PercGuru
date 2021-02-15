@@ -2,30 +2,90 @@ from discord.ext import commands
 import discord
 
 from app.cogs.base import BaseCog
+from typing import Dict
 
 
-class ConfigurationCog(BaseCog, name="Configuration"):
+class ConfigurationCog(
+    BaseCog,
+    name="Configuration",
+    description="""Commands for configuring the bot"""
+):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Maps <id of failed user command> -> <id of bot response to that command>
+        # Could clear this periodically but should be ok.
+        # Ok to just be here since don't care about persistence between sessions and this is
+        # the only cog that consumes text commands
+        self.recently_failed: Dict[int, discord.Message] = dict()
+
     """
     Commands for configuring the bot
     """
-    @commands.command(name="channel")
-    async def set_listen_channel(self, channel_id):
-        raise Exception("Not implemented")
-
     @commands.group(name="config")
+    @commands.is_owner()
     async def config(self, ctx):
         pass
 
+    async def channel_leave(self, channel: discord.TextChannel):
+        return await self.state.remove_channel(channel.guild.id, channel.id)
+
+    async def channel_join(self, channel: discord.TextChannel):
+        return await self.state.add_channel(channel.guild.id, channel.id)
+
+    async def channels_list(self, channel: discord.TextChannel):
+        return await self.state.list_channels(channel.guild.id)
+
+    def channels_to_str(self, channels):
+        lines = []
+        for whitelisted_chan in channels:
+            name = self.bot.get_channel(whitelisted_chan.channel_id).name
+            lines.append(f"- {name} ({whitelisted_chan.channel_id})")
+        return "\n".join(lines)
+
+    @config.command(
+        name="channel",
+        help="""Adds or removes the listeners for this channel.
+        Options are `join` or `leave`. No arguments also joins."""
+    )
+    @commands.is_owner()
+    async def config_listen_channel(self, ctx, *args):
+        if len(args) == 0 or args[0] == 'join':
+            result = await self.channel_join(ctx.message.channel)
+        elif args[0] == 'leave':
+            result = await self.channel_leave(ctx.message.channel)
+        elif args[0] == 'list':
+            channels, result = await self.channels_list(ctx.message.channel)
+            if len(channels) == 0:
+                await ctx.send("Not listening on any channels")
+                return
+            if result:
+                await ctx.send("Currently listening on these:\n" + self.channels_to_str(channels))
+                return
+        else:
+            await self.error(ctx.channel, "Did not understand the command")
+            return
+
+        if result:
+            await self.ack(ctx.message, keep=True)
+        else:
+            await self.error(ctx.channel, "Could not complete operation")
+
+
+    # @commands.Cog.listener()
+    # async def on_message_edit(self, before, after):
+    #     # TODO: This is kinda half baked, should figure out what I want to do here
+    #     try:
+    #         await self.bot.process_commands(after)
+    #     except:
+    #         pass
+
     @config.command(name="guilds")
-    async def configure_alliance_guilds(self, ctx, message_id):
+    @commands.is_owner()
+    async def configure_guild_teams(self, ctx, message_id):
         """
         Sets the guilds for this discord server based on the names of the reacts to the given message
         :param message_id: The ID of the message that has only the reacts of all the guilds
         """
-
-        # TODO: should probably record and watch this message for:
-        #  - people that join/leave/change guilds
-        #  - guilds that join or leave
 
         try:
             reacted_message = await ctx.fetch_message(message_id)
@@ -39,20 +99,27 @@ class ConfigurationCog(BaseCog, name="Configuration"):
             await ctx.send("Womp womp")
             return False
 
-        print(reacted_message)
+        result = await self.state.set_react_message(ctx.guild.id, ctx.channel.id, reacted_message.id)
+        if result:
+            await self.ack(ctx.message, keep=True)
+            await ctx.send("Reaction message updated successfully.")
+        else:
+            await self.error(ctx.channel, "Unable to use that message to configure the teams")
 
-        # if we wanted to get the users
-        guild_directory = {}
-        for react in reacted_message.reactions:
-            g_name = react.emoji.name
-
-            guild_members = []
-            for user in await react.users().flatten():
-                guild_members.append(user)
-
-            guild_directory[g_name] = guild_members
-
-        guild_member_counts = [f"{name} with {len(members)} member{'s' if len(members) == 1 else ''}"
-                               for name, members in guild_directory.items()]
-        guild_overview = "\n".join(guild_member_counts)
-        await ctx.send(f"Configured. ```{guild_overview}```")
+        # print(reacted_message)
+        #
+        # # if we wanted to get the users
+        # guild_directory = {}
+        # for react in reacted_message.reactions:
+        #     g_name = react.emoji.name
+        #
+        #     guild_members = []
+        #     for user in await react.users().flatten():
+        #         guild_members.append(user)
+        #
+        #     guild_directory[g_name] = guild_members
+        #
+        # guild_member_counts = [f"{name} with {len(members)} member{'s' if len(members) == 1 else ''}"
+        #                        for name, members in guild_directory.items()]
+        # guild_overview = "\n".join(guild_member_counts)
+        # await ctx.send(f"Configured. ```{guild_overview}```")

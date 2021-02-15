@@ -5,7 +5,7 @@ import tortoise.exceptions
 from discord.ext import commands
 from app.cogs.base import BaseCog
 from app.models.core import Fight
-from app.models.core import Player, Guild
+from app.models.core import Player, Team
 
 
 log = logging.getLogger(__name__)
@@ -45,25 +45,28 @@ class ReactsCog(BaseCog):
     async def handle_other_react(
             self, message: discord.Message, channel: discord.TextChannel, reaction: discord.Emoji
     ):
-        if self.guild_emote_list is None:
-            # error: guild emote list not set up
-            await channel.send(f"You haven't set up the react message. Check the help page.")
-            return
-
-        if reaction.name in self.guild_emote_list:
-            raise Exception("not implemented")
-        else:
-            player = None
-            try:
-                player = await Player.get(name=message.author.name)
-            except tortoise.exceptions.DoesNotExist:
-                # TODO: catch this?
-                guild = await Guild.get()
-                player = await Player.create(name=message.author.name)
+        raise Exception("not implemented")
+        # if self.guild_emote_list is None:
+        #     # error: guild emote list not set up
+        #     await channel.send(f"You haven't set up the react message. Check the help page.")
+        #     return
+        #
+        # if reaction.name in self.guild_emote_list:
+        #     raise Exception("not implemented")
+        # else:
+        #     player = None
+        #     try:
+        #         player = await Player.get(name=message.author.name)
+        #     except tortoise.exceptions.DoesNotExist:
+        #         # TODO: catch this?
+        #         guild = await Team.get()
+        #         player = await Player.create(name=message.author.name)
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
         if self.is_bot(payload.member.id):
+            return
+        if not await self.state.is_whitelisted_channel(payload.guild_id, payload.channel_id):
             return
 
         # Verify that the react was added by a member of that guild?

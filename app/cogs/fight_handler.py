@@ -1,11 +1,13 @@
 from discord.ext import commands
 import logging
-from app.models.core import Fight, Player, Guild
+from app.models.core import Fight, Player, Team
 from tortoise.exceptions import DoesNotExist
 
 from app.cogs.base import BaseCog
 
 log = logging.getLogger(__name__)
+
+# TODO here:
 
 
 class FightRegistrationCog(BaseCog):
@@ -14,7 +16,16 @@ class FightRegistrationCog(BaseCog):
         if self.is_bot(payload.member.id):
             return
 
-        # TODO: look up if the message deleted was kept in the store
+        if not self.state.is_whitelisted(payload.guild_id, payload.channel_id):
+            return
+
+        if not self.state.is_setup(payload.guild_id):
+            return
+
+        # TODO Implement logic here: find if fight was recorded and delete info about
+        # it if it was
+        raise Exception("not implemented")
+
         # if not then do nothing
         # if it is then need to remove the data from it
         message_id = payload.message_id
