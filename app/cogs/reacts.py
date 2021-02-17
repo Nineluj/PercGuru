@@ -40,22 +40,24 @@ class ReactsCog(BaseCog):
     async def handle_other_react(
             self, message: discord.Message, channel: discord.TextChannel, reaction: discord.Emoji
     ):
-        raise Exception("not implemented")
-        # if self.guild_emote_list is None:
-        #     # error: guild emote list not set up
-        #     await channel.send(f"You haven't set up the react message. Check the help page.")
-        #     return
-        #
-        # if reaction.name in self.guild_emote_list:
-        #     raise Exception("not implemented")
-        # else:
-        #     player = None
-        #     try:
-        #         player = await Player.get(name=message.author.name)
-        #     except tortoise.exceptions.DoesNotExist:
-        #         # TODO: catch this?
-        #         guild = await Team.get()
-        #         player = await Player.create(name=message.author.name)
+        teams = await self.get_guild_team_emojis_names(message.guild.id)
+
+        if len(teams) == 0:
+            await channel.send(f"You haven't set up the react message. Check the help page.")
+            return
+
+        if reaction.name in teams:
+            player = await Player.get(id=reaction.user.id)
+
+            if player is None:
+                user = reaction.user
+                # TODO finish here
+                raise Exception("not implemented")
+
+                # player = await Player.create(id=user.id, name=user.name, guild=)
+        else:
+            log.warning(f"Unexpected react {reaction.name} posted by {reaction.user.name} on message {message.id}")
+
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):

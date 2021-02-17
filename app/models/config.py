@@ -4,7 +4,6 @@ from tortoise import fields
 
 class Guild(Model):
     id = fields.IntField(pk=True)
-    name = fields.CharField(unique=True, max_length=20)
     react_message_channel_id = fields.IntField(null=True)
     react_message_id = fields.IntField(null=True)
 

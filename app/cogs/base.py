@@ -1,11 +1,16 @@
 import asyncio
+import traceback
+import logging
 import discord
 from discord.ext import commands
 from app.state import AppState
 
 
+log = logging.getLogger(__name__)
+TEST_GUILD_ID = 808797581547012146
+
 ACK_REACTION = "🆗"
-ACK_TIME_S = 3
+ACK_TIME_S = 4
 
 
 class BaseCog(commands.Cog):
@@ -42,4 +47,23 @@ class BaseCog(commands.Cog):
         channel: discord.TextChannel = self.bot.get_channel(channel_id)
         reacted_message = await channel.fetch_message(message_id)
 
-        return [react.emoji.name for react in reacted_message.reactions]
+        return reacted_message.reactions
+
+    async def get_guild_team_emojis_names(self, guild_id):
+        reactions = await self.get_guild_team_emojis(guild_id)
+        return [react.emoji.name for react in reactions]
+
+    @commands.Cog.listener()
+    async def on_command_error(self, ctx, error):
+        """The event triggered when an error is raised while invoking a command.
+        Parameters
+        ------------
+        ctx: commands.Context
+            The context used for command invocation.
+        error: commands.CommandError
+            The Exception raised.
+        """
+        if ctx.guild.id == TEST_GUILD_ID:
+            traceback.print_exception(type(error), error, error.__traceback__)
+        else:
+            log.error(str(error))

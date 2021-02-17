@@ -4,7 +4,6 @@ from tortoise import fields
 
 class Fight(Model):
     # Use the discord message ID for this
-    id = fields.IntField(pk=True)
     recorded = fields.DatetimeField()
     victory = fields.BooleanField(default=False)
     participants: fields.ManyToManyRelation["Player"] = fields.ManyToManyField(
@@ -14,7 +13,6 @@ class Fight(Model):
 
 class Team(Model):
     server = fields.ForeignKeyField('models.Guild', related_name='teams')
-    id = fields.IntField(pk=True)
     name = fields.CharField(unique=True, max_length=20)
     members: fields.ReverseRelation["Player"]
 

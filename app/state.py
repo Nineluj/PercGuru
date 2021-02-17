@@ -67,13 +67,15 @@ class AppState:
             self.__guilds = dict()
 
         for guild in self.__client.guilds:
-            guild_inst = await Guild.get(id=guild.id, name=guild.name)
+            exists = await Guild.exists(id=guild.id)
 
-            is_setup = False if guild_inst is None else \
+            if exists:
+                guild_inst = await Guild.get(id=guild.id)
+            else:
+                guild_inst = await Guild.create(id=guild.id)
+
+            is_setup = exists and \
                 (hasattr(guild_inst, 'react_message_id') and hasattr(guild_inst, 'react_message_channel_id'))
-
-            if not is_setup:
-                guild_inst = await Guild.create(id=guild.id, name=guild.name)
 
             self.__guilds[guild.id] = (is_setup, guild_inst)
 

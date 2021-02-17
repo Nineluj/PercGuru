@@ -1,8 +1,14 @@
 from discord.ext import commands
 import discord
+import logging
 
 from app.cogs.base import BaseCog
+from app.models.core import Team
+from app.models.config import Guild
 from typing import Dict
+
+
+log = logging.getLogger(__name__)
 
 
 class ConfigurationCog(
@@ -12,6 +18,7 @@ class ConfigurationCog(
 ):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        # V Not using this at the moment
         # Maps <id of failed user command> -> <id of bot response to that command>
         # Could clear this periodically but should be ok.
         # Ok to just be here since don't care about persistence between sessions and this is
@@ -83,10 +90,10 @@ class ConfigurationCog(
         """
 
         if len(args) == 0:
-            await self.error(ctx.channel, "Missing arguments")
+            await self.error(ctx.channel, "Missing arguments. Options are (list, set)")
             return
         elif args[0] == 'list':
-            emojis = await self.get_guild_team_emojis(ctx.guild.id)
+            emojis = await self.get_guild_team_emojis_names(ctx.guild.id)
             await ctx.send("Registered guilds are:\n" + "\n".join(emojis))
         elif args[0] == 'set':
             if len(args) != 2:
@@ -112,3 +119,23 @@ class ConfigurationCog(
                 await ctx.send("Reaction message updated successfully.")
             else:
                 await self.error(ctx.channel, "Unable to use that message to configure the teams")
+
+            # Set up the team models if they don't exist
+            reacts = await self.get_guild_team_emojis_names(ctx.guild.id)
+
+            for team_name in reacts:
+                server_id = ctx.guild.id
+                server_inst = Guild.get(id=server_id)
+                team_exists = await Team.exists(name=team_name, server=server_inst)
+
+                if not team_exists:
+                    created_team = await Team.create(name=team_name, server=server_inst)
+                    if not created_team:
+                        log.warning(f"Wasn't able to create team with name {team_name} for guild {server_id}")
+                    else:
+                        log.info(f"Created team with name {team_name} for guild {server_id}")
+
+            log.info(f"Done initializing teams")
+
+        else:
+            await ctx.send("Unknown subcommand")
