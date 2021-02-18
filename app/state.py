@@ -14,42 +14,6 @@ from app.models.config import Guild, WhitelistedChannel
 log = logging.getLogger(__name__)
 
 
-# class GuildState:
-#     is_setup: bool
-#     teams: Set[discord.Emoji]
-#     listen_channels: Set[discord.TextChannel]
-#
-#     @classmethod
-#     async def create(cls, guild: discord.Guild, state: config.Guild) -> GuildState:
-#         if not hasattr(state, 'react_message_channel_id') or state.react_message_channel_id is None:
-#             # This ignores the listen channels being set but since create will be
-#             # called anew once the full setup has been done this is fine
-#             obj = cls.__new__(cls)
-#             obj.is_setup = False
-#             return obj
-#
-#         # TODO: what if the message gets deleted since restart?
-#         channel: discord.TextChannel = guild.get_channel(state.react_message_channel_id)
-#
-#         if channel is None:
-#             raise Exception("Channel not found")
-#
-#         reacted_message = await channel.fetch_message(state.react_message_id)
-#
-#         teams = []
-#         for react in reacted_message.reactions:
-#             teams.append(react.emoji)
-#
-#         whitelisted = []
-#         for whitelisted_obj in state.whitelisted_channels:
-#             whitelisted.append(whitelisted_obj.channel_id)
-#
-#         obj = cls.__new__(cls)
-#         obj.teams = teams
-#         obj.listen_channels = whitelisted
-#         return obj
-
-
 class AppState:
     __guilds: Dict[int, Tuple[bool, Optional[Guild]]]
     __ready: bool
@@ -81,13 +45,6 @@ class AppState:
 
         self.__ready = True
 
-    # TODO: not needed?
-    async def persist(self):
-        """
-        Called when the state should get saved back into the database.
-        """
-        raise Exception("not implemented")
-
     def is_setup(self, guild_id):
         return guild_id in self.__guilds and self.__guilds[guild_id].is_setup
 
@@ -97,7 +54,7 @@ class AppState:
             return False
 
         guild = self.__guilds[guild_id][1]
-        for chan in await guild.whitelisted_channels:
+        async for chan in guild.whitelisted_channels:
             if chan.channel_id == channel_id:
                 return True
 
@@ -133,7 +90,7 @@ class AppState:
             return False
 
         guild = await Guild.get(id=guild_id)
-        for chan in await guild.whitelisted_channels:
+        async for chan in guild.whitelisted_channels:
             await chan.delete()
 
         return True

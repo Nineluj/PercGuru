@@ -9,4 +9,8 @@ class StatsCog(BaseCog):
     #     pass
     #
     # @commands.command()
-    pass
+
+    @commands.command(name="count")
+    async def number_defenses(self, guild=None, number_days=30):
+        pass
+

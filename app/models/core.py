@@ -19,8 +19,7 @@ class Team(Model):
 
 class Player(Model):
     id = fields.IntField(pk=True)
-    name = fields.TextField()
-    guild = fields.ForeignKeyField('models.Team', related_name='members')
+    team = fields.ForeignKeyField('models.Team', related_name='members')
     fights: fields.ManyToManyRelation[Fight]
 
 

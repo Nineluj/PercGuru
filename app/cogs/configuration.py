@@ -23,6 +23,7 @@ class ConfigurationCog(
         # Could clear this periodically but should be ok.
         # Ok to just be here since don't care about persistence between sessions and this is
         # the only cog that consumes text commands
+        self.sync = kwargs['sync_fn']
         self.recently_failed: Dict[int, discord.Message] = dict()
 
     """
@@ -73,6 +74,8 @@ class ConfigurationCog(
             if result:
                 await ctx.send("Currently listening on these:\n" + self.channels_to_str(channels))
                 return
+        elif args[0] == 'sync':
+            await self.sync(ctx.channel, full=len(args) == 2 and args[1] == 'full')
         else:
             await self.error(ctx.channel, "Did not understand the command")
             return
@@ -96,46 +99,49 @@ class ConfigurationCog(
             emojis = await self.get_guild_team_emojis_names(ctx.guild.id)
             await ctx.send("Registered guilds are:\n" + "\n".join(emojis))
         elif args[0] == 'set':
-            if len(args) != 2:
-                await self.error(ctx.channel, "Use: set <message_id>")
-                return
-
-            message_id = args[1]
-            try:
-                reacted_message = await ctx.fetch_message(message_id)
-            except discord.NotFound:
-                await ctx.send("Can't find the message with that ID. Try again.")
-                return False
-            except discord.Forbidden:
-                await ctx.send("Can't access that message.")
-                return False
-            except discord.HTTPException:
-                await ctx.send("Womp womp")
-                return False
-
-            result = await self.state.set_react_message(ctx.guild.id, ctx.channel.id, reacted_message.id)
-            if result:
-                await self.ack(ctx.message, keep=True)
-                await ctx.send("Reaction message updated successfully.")
-            else:
-                await self.error(ctx.channel, "Unable to use that message to configure the teams")
-
-            # Set up the team models if they don't exist
-            reacts = await self.get_guild_team_emojis_names(ctx.guild.id)
-
-            for team_name in reacts:
-                server_id = ctx.guild.id
-                server_inst = Guild.get(id=server_id)
-                team_exists = await Team.exists(name=team_name, server=server_inst)
-
-                if not team_exists:
-                    created_team = await Team.create(name=team_name, server=server_inst)
-                    if not created_team:
-                        log.warning(f"Wasn't able to create team with name {team_name} for guild {server_id}")
-                    else:
-                        log.info(f"Created team with name {team_name} for guild {server_id}")
-
-            log.info(f"Done initializing teams")
-
+            await self.configure_set(ctx, *args)
         else:
             await ctx.send("Unknown subcommand")
+
+    async def configure_set(self, ctx, *args):
+        if len(args) != 2:
+            await self.error(ctx.channel, "Use: set <message_id>")
+            return
+
+        message_id = args[1]
+        try:
+            reacted_message = await ctx.fetch_message(message_id)
+        except discord.NotFound:
+            await ctx.send("Can't find the message with that ID. Try again.")
+            return False
+        except discord.Forbidden:
+            await ctx.send("Can't access that message.")
+            return False
+        except discord.HTTPException:
+            await ctx.send("Womp womp")
+            return False
+
+        result = await self.state.set_react_message(ctx.guild.id, ctx.channel.id, reacted_message.id)
+        if result:
+            await self.ack(ctx.message, keep=True)
+            await ctx.send("Reaction message updated successfully.")
+        else:
+            await self.error(ctx.channel, "Unable to use that message to configure the teams")
+
+        # Set up the team models if they don't exist
+        reacts = await self.get_guild_team_emojis_names(ctx.guild.id)
+
+        for team_name in reacts:
+            server_id = ctx.guild.id
+            server_inst = await Guild.get(id=server_id)
+            team_exists = await Team.exists(name=team_name, server=server_inst)
+
+            if not team_exists:
+                created_team = await Team.create(name=team_name, server=server_inst)
+                if not created_team:
+                    log.warning(f"Wasn't able to create team with name {team_name} for guild {server_id}")
+                else:
+                    log.info(f"Created team with name {team_name} for guild {server_id}")
+
+        log.info(f"Done initializing teams")
+

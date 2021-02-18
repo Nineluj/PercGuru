@@ -39,22 +39,17 @@ log = logging.getLogger(__name__)
 # Add the cogs (components of the bots, grouped into categories in help)
 state = AppState(bot)
 cog_args = (state, bot)
-for cog in [ConfigurationCog, StatsCog, FightRegistrationCog, ReactsCog, MemeCog]:
+
+# Need to extract sync from this cog
+fight_cog = FightRegistrationCog(*cog_args)
+bot.add_cog(fight_cog)
+
+for cog in [StatsCog, ReactsCog, MemeCog]:
     bot.add_cog(cog(*cog_args))
 
-# def create_is_setup_with_state(state: AppState):
-#     def is_setup():
-#         def predicate(ctx):
-#             if ctx.guild is None:
-#                 return False
-#
-#             gid = ctx.guild.id
-#             return state.is_setup(gid)
-#         return predicate
-#     return is_setup
-#
-#
-# is_setup = create_is_setup_with_state(state)
+# Pass it to configuration cog
+bot.add_cog(ConfigurationCog(*cog_args, sync_fn=fight_cog.process_backlog))
+
 
 @bot.event
 async def on_connect():

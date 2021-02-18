@@ -17,7 +17,7 @@ class BaseCog(commands.Cog):
     def __init__(self, state: AppState, bot: discord.ext.commands.bot.Bot, **other):
         self.state = state
         self.bot = bot
-        super().__init__(**other)
+        super().__init__()
 
     def is_bot(self, id: int):
         return id == self.bot.user.id
@@ -67,3 +67,7 @@ class BaseCog(commands.Cog):
             traceback.print_exception(type(error), error, error.__traceback__)
         else:
             log.error(str(error))
+
+    @commands.Cog.listener()
+    async def on_error(self, event, *args, **kwargs):
+        a = 5
