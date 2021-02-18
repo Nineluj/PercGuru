@@ -7,7 +7,6 @@ from app.models.core import Team
 from app.models.config import Guild
 from typing import Dict
 
-
 log = logging.getLogger(__name__)
 
 
@@ -29,6 +28,7 @@ class ConfigurationCog(
     """
     Commands for configuring the bot
     """
+
     @commands.group(name="config")
     @commands.is_owner()
     async def config(self, ctx):
@@ -75,7 +75,12 @@ class ConfigurationCog(
                 await ctx.send("Currently listening on these:\n" + self.channels_to_str(channels))
                 return
         elif args[0] == 'sync':
+            await ctx.send("Sync in progress, likely to take a while. "
+                           "Don't register any new fights or participation "
+                           "lest you want to have to run this again...")
             await self.sync(ctx.channel, full=len(args) == 2 and args[1] == 'full')
+            await ctx.send("Done with sync")
+            return
         else:
             await self.error(ctx.channel, "Did not understand the command")
             return
@@ -144,4 +149,3 @@ class ConfigurationCog(
                     log.info(f"Created team with name {team_name} for guild {server_id}")
 
         log.info(f"Done initializing teams")
-

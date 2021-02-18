@@ -22,14 +22,21 @@ class ReactsCog(BaseCog):
             guilds.append(str(g))
         log.info("Joined these servers: " + ",".join(guilds))
 
-    async def handle_fight_win(self, fight, message: discord.Message):
+    async def handle_fight_win(self, fight, message: discord.Message, ack=False):
         # Not adding a way to unmark this, better not enter it incorrectly
         fight.victory = True
         await fight.save()
-        await self.ack(message)
+        if ack:
+            await self.ack(message)
 
     async def handle_other_react(
-            self, fight: Fight, user: discord.Member, reaction: str, message: discord.Message, channel: discord.TextChannel
+            self,
+            fight: Fight,
+            user: discord.Member,
+            reaction: str,
+            message: discord.Message,
+            channel: discord.TextChannel,
+            ack=False
     ):
         teams = await self.get_guild_team_emojis_names(message.guild.id)
 
@@ -50,7 +57,8 @@ class ReactsCog(BaseCog):
             # Will not count as twice, will only override if already present
             await fight.participants.add(player)
             log.info(f"Added player {username} as participant for fight {message.id}")
-            await self.ack(message)
+            if ack:
+                await self.ack(message)
         else:
             log.warning(f"Non team react '{reaction}' posted by {username} on message {message.id}")
 
@@ -73,19 +81,16 @@ class ReactsCog(BaseCog):
 
         reaction = payload.emoji
         user = payload.member
-        message_id = payload.message_id
 
         await self.handle_react(reaction.name, user, payload.channel_id, payload.message_id)
 
-    async def handle_react(self, reaction: str, user: discord.Member, channel_id: int, message_id: int):
+    async def handle_react(self, reaction: str, user: discord.Member, channel_id: int, message_id: int, ack=True):
         fight = await Fight.get(id=message_id)
 
         channel = self.bot.get_channel(channel_id)
         message = await channel.fetch_message(message_id)
 
         if reaction == FIGHT_WIN_REACT:
-            await self.handle_fight_win(fight, message)
+            await self.handle_fight_win(fight, message, ack=ack)
         else:
-            await self.handle_other_react(fight, user, reaction, message, channel)
-
-
+            await self.handle_other_react(fight, user, reaction, message, channel, ack=ack)

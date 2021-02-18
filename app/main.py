@@ -41,10 +41,12 @@ state = AppState(bot)
 cog_args = (state, bot)
 
 # Need to extract sync from this cog
-fight_cog = FightRegistrationCog(*cog_args)
+react_cog = ReactsCog(*cog_args)
+bot.add_cog(react_cog)
+fight_cog = FightRegistrationCog(*cog_args, react_handler=react_cog.handle_react)
 bot.add_cog(fight_cog)
 
-for cog in [StatsCog, ReactsCog, MemeCog]:
+for cog in [StatsCog, MemeCog]:
     bot.add_cog(cog(*cog_args))
 
 # Pass it to configuration cog
