@@ -7,9 +7,8 @@ from app.cogs.base import BaseCog
 from app.models.core import Fight
 from app.models.core import Team
 
-
 log = logging.getLogger(__name__)
-FIGHT_WIN_REACT = "☑️"
+# FIGHT_WIN_REACT = "☑️"
 ACK_MESSAGE_REACT = "👍"
 REFRESH_REACT = "👋"
 
@@ -57,7 +56,44 @@ class ReactsCog(BaseCog):
 
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self, payload):
-        raise Exception("not implemented")
+        # Need to allow people fix mis-inputs (wrong alliance reaction)
+        if self.is_own_bot(payload.user_id):
+            return
+        if not await self.state.is_whitelisted_channel(payload.guild_id, payload.channel_id):
+            return
+
+        if not hasattr(payload, 'emoji') or not hasattr(payload.emoji, 'name'):
+            return
+
+        removed = payload.emoji.name
+
+        if removed not in await self.state.list_teams(payload.guild_id):
+            return
+
+        message_id = payload.message_id
+
+        try:
+            fight = await Fight.get(id=message_id)
+            await fight.participants.clear()
+
+            message = await self.bot.get_channel(payload.channel_id).fetch_message(payload.message_id)
+            await self.process_message_reacts(message)
+            await self.ack(message)
+
+        except tortoise.exceptions.DoesNotExist:
+            pass
+
+    async def process_message_reacts(self, message: discord.Message):
+        for react in message.reactions:
+            emoji = react.emoji
+
+            if hasattr(emoji, 'name'):
+                emoji_str = emoji.name
+            else:
+                emoji_str = emoji
+
+            async for member in react.users():
+                await self.handle_react(emoji_str, member, message.channel.id, message.id, ack=False)
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
@@ -67,7 +103,7 @@ class ReactsCog(BaseCog):
             - !!! Don't react for another guild
         - You don't mark lost fights as wins since they cannot be unmarked
         """
-        if self.is_bot(payload.member.id):
+        if self.is_own_bot(payload.member.id):
             return
         if not await self.state.is_whitelisted_channel(payload.guild_id, payload.channel_id):
             return
@@ -83,7 +119,7 @@ class ReactsCog(BaseCog):
         channel = self.bot.get_channel(channel_id)
         message = await channel.fetch_message(message_id)
 
-        if reaction == FIGHT_WIN_REACT:
-            await self.handle_fight_win(fight, message, ack=ack)
-        else:
-            await self.handle_other_react(fight, user, reaction, message, channel, ack=ack)
+        # if reaction == FIGHT_WIN_REACT:
+        #     await self.handle_fight_win(fight, message, ack=ack)
+        # else:
+        await self.handle_other_react(fight, user, reaction, message, channel, ack=ack)

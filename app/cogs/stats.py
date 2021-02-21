@@ -24,7 +24,7 @@ class StatsCog(
         else:
             number_days = 30
 
-        teams = await self.state.list_teams(ctx.guild.id)  #self.get_guild_team_emojis_names(ctx.guild.id)
+        teams = await self.state.list_teams(ctx.guild.id)
         # await ctx.send(",".join(teams))
 
         now = datetime.datetime.now()

@@ -44,7 +44,7 @@ cog_args = (state, bot)
 # Need to extract sync from this cog
 react_cog = ReactsCog(*cog_args)
 bot.add_cog(react_cog)
-fight_cog = FightRegistrationCog(*cog_args, react_handler=react_cog.handle_react)
+fight_cog = FightRegistrationCog(*cog_args, process_reacts=react_cog.process_message_reacts)
 bot.add_cog(fight_cog)
 
 for cog in [ConfigurationCog, StatsCog, ChannelsCog]:  # , MemeCog]:

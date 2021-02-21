@@ -13,9 +13,9 @@ class FightRegistrationCog(
     BaseCog,
     name="Fights"
 ):
-    def __init__(self, *args, react_handler=None, **kwargs):
+    def __init__(self, *args, process_reacts=None, **kwargs):
         super().__init__(*args, **kwargs)
-        self.react_handler = react_handler
+        self.process_reacts = process_reacts
 
     @commands.command("sync")
     async def sync_data(self, ctx, *args):
@@ -31,10 +31,6 @@ class FightRegistrationCog(
 
     @commands.Cog.listener()
     async def on_raw_message_delete(self, payload):
-        # message = await self.bot.get_channel(payload.channel_id).fetch_message(payload.message_id)
-        # if self.is_bot(payload.member.id):
-        #     return
-
         if not await self.state.is_whitelisted_channel(payload.guild_id, payload.channel_id):
             return
 
@@ -61,17 +57,9 @@ class FightRegistrationCog(
                 log.info(f"Created fight uploaded by {message.author.nick or message.author.name}")
 
             if len(message.reactions) != 0:
-                log.info("Processed message already has reacts, checking those")
-                for react in message.reactions:
-                    emoji = react.emoji
-
-                    if hasattr(emoji, 'name'):
-                        emoji_str = emoji.name
-                    else:
-                        emoji_str = emoji
-
-                    async for member in react.users():
-                        await self.react_handler(emoji_str, member, message.channel.id, message.id, ack=False)
+                fight = await Fight.get(id=message.id)
+                await fight.participants.clear()
+                await self.process_reacts(message)
 
             if ack:
                 await self.ack(message)

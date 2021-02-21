@@ -21,8 +21,8 @@ class BaseCog(commands.Cog):
         super().__init__()
         self.__handled_error_message_ids = set()
 
-    def is_bot(self, id: int):
-        return id == self.bot.user.id
+    def is_own_bot(self, user_id: int):
+        return user_id == self.bot.user.id
 
     async def ack(self, message: discord.Message, keep=False):
         asyncio.create_task(self.__ack(message, keep))
