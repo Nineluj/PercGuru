@@ -5,7 +5,7 @@ import tortoise.exceptions
 from discord.ext import commands
 from app.cogs.base import BaseCog
 from app.models.core import Fight
-from app.models.core import Player, Team
+from app.models.core import Team
 
 
 log = logging.getLogger(__name__)
@@ -38,29 +38,22 @@ class ReactsCog(BaseCog):
             channel: discord.TextChannel,
             ack=False
     ):
-        teams = await self.get_guild_team_emojis_names(message.guild.id)
+        teams = await self.state.list_teams(message.guild.id)
 
         if len(teams) == 0:
             await channel.send(f"You haven't set up the react message. Check the help page.")
             return
 
-        username = user.nick or user.name
-
         if reaction in teams:
-            try:
-                player = await Player.get(id=user.id)
-            except tortoise.exceptions.DoesNotExist:
-                # Should never get us a NotFound bc of the earlier check
-                team = await Team.get(name=reaction)
-                player = await Player.create(id=user.id, team=team)
+            team = await Team.get(name=reaction)
+            # Add is idempotent
+            await fight.participants.add(team)
+            log.info(f"Recorded team {reaction} as participant for fight {message.id}")
 
-            # Will not count as twice, will only override if already present
-            await fight.participants.add(player)
-            log.info(f"Added player {username} as participant for fight {message.id}")
             if ack:
                 await self.ack(message)
         else:
-            log.warning(f"Non team react '{reaction}' posted by {username} on message {message.id}")
+            log.warning(f"Non team react '{reaction}' posted by {user} on message {message.id}")
 
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self, payload):

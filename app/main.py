@@ -11,6 +11,7 @@ from app.help_format import MyHelpCommand
 from app.cogs.configuration import ConfigurationCog
 from app.cogs.stats import StatsCog
 from app.cogs.reacts import ReactsCog
+from app.cogs.channels import ChannelsCog
 from app.cogs.fight_handler import FightRegistrationCog
 from app.cogs.memes import MemeCog
 
@@ -24,7 +25,7 @@ intents = discord.Intents.default()
 intents.messages = True
 intents.members = True
 intents.reactions = True
-bot = commands.Bot(command_prefix="$", help_command=MyHelpCommand(), intents=intents)
+bot = commands.Bot(command_prefix="pg ", help_command=MyHelpCommand(), intents=intents)
 
 # Set up the log
 logging.basicConfig(
@@ -46,11 +47,8 @@ bot.add_cog(react_cog)
 fight_cog = FightRegistrationCog(*cog_args, react_handler=react_cog.handle_react)
 bot.add_cog(fight_cog)
 
-for cog in [StatsCog, MemeCog]:
+for cog in [ConfigurationCog, StatsCog, ChannelsCog]:  # , MemeCog]:
     bot.add_cog(cog(*cog_args))
-
-# Pass it to configuration cog
-bot.add_cog(ConfigurationCog(*cog_args, sync_fn=fight_cog.process_backlog))
 
 
 @bot.event

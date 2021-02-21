@@ -3,6 +3,7 @@ import traceback
 import logging
 import discord
 from discord.ext import commands
+from discord.ext.commands import errors
 from app.state import AppState
 
 
@@ -18,6 +19,7 @@ class BaseCog(commands.Cog):
         self.state = state
         self.bot = bot
         super().__init__()
+        self.__handled_error_message_ids = set()
 
     def is_bot(self, id: int):
         return id == self.bot.user.id
@@ -41,18 +43,6 @@ class BaseCog(commands.Cog):
         pass
         # self.bot.help_command()
 
-    async def get_guild_team_emojis(self, guild_id):
-        # TODO: cache this?
-        channel_id, message_id = await self.state.get_react_message(guild_id)
-        channel: discord.TextChannel = self.bot.get_channel(channel_id)
-        reacted_message = await channel.fetch_message(message_id)
-
-        return reacted_message.reactions
-
-    async def get_guild_team_emojis_names(self, guild_id):
-        reactions = await self.get_guild_team_emojis(guild_id)
-        return [react.emoji.name for react in reactions]
-
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
         """The event triggered when an error is raised while invoking a command.
@@ -63,11 +53,8 @@ class BaseCog(commands.Cog):
         error: commands.CommandError
             The Exception raised.
         """
+
         if ctx.guild.id == TEST_GUILD_ID:
             traceback.print_exception(type(error), error, error.__traceback__)
         else:
             log.error(str(error))
-
-    @commands.Cog.listener()
-    async def on_error(self, event, *args, **kwargs):
-        a = 5

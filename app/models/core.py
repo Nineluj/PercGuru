@@ -6,20 +6,12 @@ class Fight(Model):
     # Use the discord message ID for this
     recorded = fields.DatetimeField()
     victory = fields.BooleanField(default=False)
-    participants: fields.ManyToManyRelation["Player"] = fields.ManyToManyField(
-        'models.Player', related_name='fights', through='fight_participant'
+    participants: fields.ManyToManyRelation["Team"] = fields.ManyToManyField(
+        'models.Team', related_name='fights', through='fight_team_participation'
     )
 
 
 class Team(Model):
     server = fields.ForeignKeyField('models.Guild', related_name='teams')
     name = fields.CharField(unique=True, max_length=20)
-    members: fields.ReverseRelation["Player"]
-
-
-class Player(Model):
-    id = fields.IntField(pk=True)
-    team = fields.ForeignKeyField('models.Team', related_name='members')
     fights: fields.ManyToManyRelation[Fight]
-
-

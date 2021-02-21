@@ -10,7 +10,10 @@ import matplotlib as mpl
 mpl.use('Agg')
 
 
-class StatsCog(BaseCog):
+class StatsCog(
+    BaseCog,
+    name="Stats"
+):
     @commands.command(name="count", help="count [number_of_days] [-plot]")
     async def number_defenses(self, ctx, *args):
         if len(args) > 0:
@@ -21,7 +24,7 @@ class StatsCog(BaseCog):
         else:
             number_days = 30
 
-        teams = await self.get_guild_team_emojis_names(ctx.guild.id)
+        teams = await self.state.list_teams(ctx.guild.id)  #self.get_guild_team_emojis_names(ctx.guild.id)
         # await ctx.send(",".join(teams))
 
         now = datetime.datetime.now()

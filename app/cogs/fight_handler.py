@@ -1,7 +1,6 @@
 from discord.ext import commands
 import discord
 import logging
-from datetime import datetime
 from app.models.core import Fight
 from tortoise.exceptions import DoesNotExist
 
@@ -10,10 +9,25 @@ from app.cogs.base import BaseCog
 log = logging.getLogger(__name__)
 
 
-class FightRegistrationCog(BaseCog):
+class FightRegistrationCog(
+    BaseCog,
+    name="Fights"
+):
     def __init__(self, *args, react_handler=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.react_handler = react_handler
+
+    @commands.command("sync")
+    async def sync_data(self, ctx, *args):
+        """
+        Syncs the fight data on this channel
+        """
+        await ctx.send("Sync in progress, likely to take a while. "
+                       "Don't register any new fights or participation "
+                       "lest you want to have to run this again...")
+
+        await self.process_backlog(ctx.channel, full=len(args) == 1 and args[0] == 'full')
+        await ctx.send("Done with sync")
 
     @commands.Cog.listener()
     async def on_raw_message_delete(self, payload):
@@ -36,7 +50,7 @@ class FightRegistrationCog(BaseCog):
 
     @commands.Cog.listener()
     async def on_message(self, message, ack=True):
-        if self.is_bot(message.author.id):
+        if message.author.bot:
             return
         if not await self.state.is_whitelisted_channel(message.guild.id, message.channel.id):
             return

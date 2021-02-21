@@ -11,5 +11,5 @@ class Guild(Model):
 
 
 class WhitelistedChannel(Model):
-    channel_id = fields.IntField()
+    channel_id = fields.IntField(unique=True)
     guild = fields.ForeignKeyField(model_name='models.Guild', related_name="whitelisted_channels")
