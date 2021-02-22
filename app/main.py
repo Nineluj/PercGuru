@@ -4,6 +4,7 @@ from os import getenv
 from collections import namedtuple
 from sys import stdout
 import logging
+import traceback
 
 from app.state import AppState
 from app.data import db
@@ -17,6 +18,7 @@ from app.cogs.memes import MemeCog
 
 TOKEN = getenv("BOT_TOKEN")
 LOG_FILE = getenv("LOG_FILE", "perc.log")
+TEST_GUILD_ID = 808797581547012146
 
 Job = namedtuple("Job", [])
 
@@ -47,7 +49,7 @@ bot.add_cog(react_cog)
 fight_cog = FightRegistrationCog(*cog_args, process_reacts=react_cog.process_message_reacts)
 bot.add_cog(fight_cog)
 
-for cog in [ConfigurationCog, StatsCog, ChannelsCog]:  # , MemeCog]:
+for cog in [ConfigurationCog, StatsCog, ChannelsCog, MemeCog]:
     bot.add_cog(cog(*cog_args))
 
 
@@ -61,6 +63,16 @@ async def on_connect():
 async def on_ready():
     await state.load()
     log.info('Connected! Username: {0.name}, ID: {0.id}'.format(bot.user))
+
+
+@bot.event
+async def on_command_error(ctx, error):
+    if ctx.guild.id == TEST_GUILD_ID:
+        traceback.print_exception(type(error), error, error.__traceback__)
+    else:
+        log.error(str(error))
+
+    await ctx.send(f"Could not complete command. Reason: {str(error)}")
 
 
 def run():

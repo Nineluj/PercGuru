@@ -2,6 +2,7 @@ from discord.ext import commands
 import logging
 
 from app.util import send_embed
+from app.permissions import is_top_privilege, fail, MissingPrivilegeException
 from app.cogs.base import BaseCog
 
 log = logging.getLogger(__name__)
@@ -17,11 +18,14 @@ class ChannelsCog(
         help="Manage the channels that the bot listens on",
         invoke_without_command=True
     )
-    @commands.is_owner()
+    @commands.guild_only()
+    @is_top_privilege()
     async def config_guild_channels(self, ctx):
         await ctx.invoke(self.config_guild_channels_list)
 
     @config_guild_channels.command(name="join")
+    @commands.guild_only()
+    @is_top_privilege()
     async def config_guild_channels_join(self, ctx):
         """
         Joins the channel in which this message was sent
@@ -33,6 +37,8 @@ class ChannelsCog(
             await self.ack(ctx.message, keep=True)
 
     @config_guild_channels.command(name="leave")
+    @commands.guild_only()
+    @is_top_privilege()
     async def config_guild_channels_leave(self, ctx):
         """
         Leaves the channel in which this message was sent
@@ -44,6 +50,8 @@ class ChannelsCog(
             await self.ack(ctx.message, keep=True)
 
     @config_guild_channels.command(name="list")
+    @commands.guild_only()
+    @is_top_privilege()
     async def config_guild_channels_list(self, ctx):
         """
         Lists the channels that the bot is listening on in this server
@@ -56,6 +64,8 @@ class ChannelsCog(
             await send_embed(ctx, "Channels", self.channels_to_str(channels))
 
     @config_guild_channels.command(name="clear")
+    @commands.guild_only()
+    @is_top_privilege()
     async def config_guild_channels_clear(self, ctx):
         """
         Stops listening on all channels for this server

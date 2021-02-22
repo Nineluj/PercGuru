@@ -4,6 +4,7 @@ import discord
 import logging
 
 from app.util import send_embed
+from app.permissions import is_top_privilege
 from app.cogs.base import BaseCog
 from app.models.core import Team
 from app.models.config import Guild
@@ -33,16 +34,21 @@ class ConfigurationCog(
         name="guilds",
         invoke_without_command=True
     )
-    @commands.is_owner()
+    @commands.guild_only()
+    @is_top_privilege()
     async def configure_guild_teams(self, ctx):
         await ctx.invoke(self.configure_list)
 
     @configure_guild_teams.command(name="list")
+    @commands.guild_only()
+    @is_top_privilege()
     async def configure_list(self, ctx):
         emojis = await self.state.list_teams(ctx.guild.id)  # await self.get_guild_team_emojis_names(ctx.guild.id)
         await send_embed(ctx.channel, "Guilds", "\n".join(emojis))
 
     @configure_guild_teams.command(name="set")
+    @commands.guild_only()
+    @is_top_privilege()
     async def configure_set(self, ctx, *args):
         if len(args) != 1:
             await self.error(ctx.channel, "Use: set <message_id>")
@@ -84,24 +90,3 @@ class ConfigurationCog(
                     log.info(f"Created team with name {team_name} for guild {server_id}")
 
         log.info(f"Done initializing teams")
-
-    # @config.command(name="clear")
-    # @discord.ext.commands.is_owner()
-    # async def clear_recent(self, ctx, *args):
-    #     # Only want to do this on the test server
-    #     if ctx.guild.id == 808797581547012146:
-    #         left = 10
-    #
-    #         if len(args) == 1:
-    #             left = int(args[0])
-    #
-    #         all_msgs = []
-    #
-    #         async for message in ctx.channel.history():
-    #             all_msgs.append(message)
-    #             left -= 1
-    #
-    #             if left == 0:
-    #                 break
-    #
-    #         await ctx.channel.delete_messages(all_msgs)

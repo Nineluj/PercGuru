@@ -5,6 +5,7 @@ from app.models.core import Fight
 from tortoise.exceptions import DoesNotExist
 
 from app.cogs.base import BaseCog
+from app.permissions import is_top_privilege
 
 log = logging.getLogger(__name__)
 
@@ -18,13 +19,15 @@ class FightRegistrationCog(
         self.process_reacts = process_reacts
 
     @commands.command("sync")
+    @commands.guild_only()
+    @is_top_privilege()
     async def sync_data(self, ctx, *args):
         """
         Syncs the fight data on this channel
         """
         await ctx.send("Sync in progress, likely to take a while. "
-                       "Don't register any new fights or participation "
-                       "lest you want to have to run this again...")
+                       "Don't register any new fights or participation. "
+                       "If you do then run this again...")
 
         await self.process_backlog(ctx.channel, full=len(args) == 1 and args[0] == 'full')
         await ctx.send("Done with sync")

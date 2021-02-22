@@ -1,5 +1,5 @@
 import discord
-import discord.ext.commands
+from discord.ext import commands
 
 
 async def send_embed(ctx, title, body):
@@ -12,6 +12,3 @@ async def send_stats_embed(ctx, title, fields):
     for name, value in fields:
         e.add_field(name=name, value=value, inline=True)
     await ctx.send(embed=e)
-
-
-fail = discord.ext.commands.check(lambda ctx: False)

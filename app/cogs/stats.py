@@ -1,7 +1,9 @@
-import matplotlib.pyplot as plt
-from discord.ext import commands
 from app.cogs.base import BaseCog
 from app.models.core import Fight, Team
+from app.permissions import is_privileged
+
+import matplotlib.pyplot as plt
+from discord.ext import commands
 import discord
 import datetime
 from app.util import send_stats_embed
@@ -15,6 +17,8 @@ class StatsCog(
     name="Stats"
 ):
     @commands.command(name="count", help="count [number_of_days] [-plot]")
+    @commands.guild_only()
+    @is_privileged()
     async def number_defenses(self, ctx, *args):
         if len(args) > 0:
             try:

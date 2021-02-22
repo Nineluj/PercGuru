@@ -9,9 +9,12 @@ from app.cogs.base import BaseCog
 lines = [
     "fail their challenge",
     "bully gobballs",
-    "focus the perc",
+    "die to a perc",
     "not crit three times in a row",
-    "wipe on korri"
+    "wipe on korri",
+    "throw their vulbis in the trash",
+    "spend $100 on color changes",
+    "die against a treasure hunt chest"
 ]
 
 
@@ -26,9 +29,12 @@ class MemeCog(BaseCog):
 
     async def set_new_status(self):
         guild = choice(self.bot.guilds)
-        member = choice(guild.members)
+        all_no_bots = list(filter(lambda member: not member.bot, guild.members))
 
-        await self.bot.change_presence(activity=discord.Activity(
-            type=discord.ActivityType.watching,
-            name=f"{member.nick if member.nick is not None else member.name} {choice(lines)}"
-        ))
+        if len(all_no_bots) != 0:
+            member = choice(all_no_bots)
+
+            await self.bot.change_presence(activity=discord.Activity(
+                type=discord.ActivityType.watching,
+                name=f"{member.nick or member.name} {choice(lines)}"
+            ))
