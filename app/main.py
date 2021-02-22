@@ -27,6 +27,7 @@ intents = discord.Intents.default()
 intents.messages = True
 intents.members = True
 intents.reactions = True
+intents.guilds = True
 bot = commands.Bot(command_prefix="pg ", help_command=MyHelpCommand(), intents=intents)
 
 # Set up the log
@@ -73,6 +74,18 @@ async def on_command_error(ctx, error):
         log.error(str(error))
 
     await ctx.send(f"Could not complete command. Reason: {str(error)}")
+
+
+@bot.event
+async def on_guild_join(guild):
+    log.info(f"Joined a new guild {guild.name}")
+    await state.load()
+
+
+@bot.event
+async def on_guild_remove(guild):
+    log.info(f"Left guild {guild.name}")
+    await state.load()
 
 
 def run():
