@@ -1,5 +1,6 @@
 from app.cogs.base import BaseCog
 from app.models.core import Fight, Team
+from app.models.config import Guild
 from app.permissions import is_privileged
 
 import matplotlib.pyplot as plt
@@ -37,7 +38,8 @@ class StatsCog(
         team_participation_count = {}
         fights = set()
         for t in teams:
-            team = await Team.get(name=t)
+            server = await Guild.get(id=ctx.guild.id)
+            team = await Team.get(name=t, server=server)
 
             participations = 0
             async for fight in team.fights.filter(recorded__gte=min_dt):

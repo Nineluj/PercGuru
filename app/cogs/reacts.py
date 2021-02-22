@@ -4,8 +4,8 @@ import tortoise.exceptions
 
 from discord.ext import commands
 from app.cogs.base import BaseCog
-from app.models.core import Fight
-from app.models.core import Team
+from app.models.core import Fight, Team
+from app.models.config import Guild
 
 log = logging.getLogger(__name__)
 # FIGHT_WIN_REACT = "☑️"
@@ -44,7 +44,8 @@ class ReactsCog(BaseCog):
             return
 
         if reaction in teams:
-            team = await Team.get(name=reaction)
+            server = await Guild.get(id=message.guild.id)
+            team = await Team.get(name=reaction, server=server)
             # Add is idempotent
             await fight.participants.add(team)
             log.info(f"Recorded team {reaction} as participant for fight {message.id}")

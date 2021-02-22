@@ -80,4 +80,5 @@ class FightRegistrationCog(
             start_at = last_fight.recorded.replace(tzinfo=None)
 
         async for message in channel.history(after=start_at, limit=None):
+            log.info(f"Processed one message [{message}]")
             await self.on_message(message, ack=False)

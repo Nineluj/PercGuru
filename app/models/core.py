@@ -13,5 +13,5 @@ class Fight(Model):
 
 class Team(Model):
     server = fields.ForeignKeyField('models.Guild', related_name='teams')
-    name = fields.CharField(unique=True, max_length=20)
+    name = fields.CharField(max_length=20)
     fights: fields.ManyToManyRelation[Fight]
