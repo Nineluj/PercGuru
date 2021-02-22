@@ -68,11 +68,15 @@ class ConfigurationCog(
             return False
 
         result = await self.state.set_react_message(ctx.guild.id, ctx.channel.id, reacted_message.id)
-        if result:
-            await self.ack(ctx.message, keep=True)
-            await ctx.send("Reaction message updated successfully.")
-        else:
-            await self.error(ctx.channel, "Unable to use that message to configure the teams")
+
+        try:
+            if result:
+                await self.ack(ctx.message, keep=True)
+                await ctx.send("Reaction message updated successfully.")
+            else:
+                await self.error(ctx.channel, "Unable to use that message to configure the teams")
+        except discord.Forbidden:
+            log.warning("Unable to post confirmation of guilds set")
 
         # Set up the team models if they don't exist
         reacts = await self.state.list_teams(ctx.guild.id)  # self.get_guild_team_emojis_names(ctx.guild.id)

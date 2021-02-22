@@ -73,7 +73,8 @@ async def on_command_error(ctx, error):
     else:
         log.error(str(error))
 
-    await ctx.send(f"Could not complete command. Reason: {str(error)}")
+    await ctx.send(f"(Guild={ctx.guild.name if ctx.guild is not None else 'No guild'}) "
+                   f"Could not complete command. Reason: {str(error)}")
 
 
 @bot.event
