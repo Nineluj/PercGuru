@@ -25,7 +25,6 @@ class StatsCog(
             number_days = 30
 
         teams = await self.state.list_teams(ctx.guild.id)
-        # await ctx.send(",".join(teams))
 
         now = datetime.datetime.now()
         delta = datetime.timedelta(days=number_days)
@@ -36,9 +35,8 @@ class StatsCog(
             team = await Team.get(name=t)
 
             participations = 0
-            async for member in team.members:
-                async for fight in member.fights.filter(recorded__gte=min_dt):
-                    participations += 1
+            async for fight in team.fights.filter(recorded__gte=min_dt):
+                participations += 1
 
             count[t] = participations
 
