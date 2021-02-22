@@ -28,7 +28,12 @@ class MemeCog(BaseCog):
         await self.set_new_status()
 
     async def set_new_status(self):
-        guild = choice(self.bot.guilds)
+        guilds_no_test = list(filter(lambda guild: not "test" in guild.name.lower(), self.bot.guilds))
+
+        if len(guilds_no_test) == 0:
+            return
+
+        guild = choice(guilds_no_test)
         all_no_bots = list(filter(lambda member: not member.bot, guild.members))
 
         if len(all_no_bots) != 0:
