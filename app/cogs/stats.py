@@ -30,22 +30,27 @@ class StatsCog(
         delta = datetime.timedelta(days=number_days)
         min_dt = now - delta
 
-        count = {}
+        team_participation_count = {}
+        fights = set()
         for t in teams:
             team = await Team.get(name=t)
 
             participations = 0
             async for fight in team.fights.filter(recorded__gte=min_dt):
+                fights.add(fight)
                 participations += 1
 
-            count[t] = participations
+            team_participation_count[t] = participations
 
-        ans = [f"{team.capitalize()}: {how_many}" for team, how_many in count.items()]
+        fight_count = len(fights)
+
+        ans = [f"{team.capitalize()}: {how_many} ({100 * how_many / fight_count:.1f}%)"
+               for team, how_many in team_participation_count.items()]
         await send_embed(ctx, f"Perc Fight Participation ({number_days} days)", "\n".join(ans))
 
         if "-plot" in args:
-            xs = list(count.keys())
-            ys = list(count.values())
+            xs = list(team_participation_count.keys())
+            ys = list(team_participation_count.values())
 
             sorted_ys, sorted_xs = (list(t) for t in zip(*sorted(zip(ys, xs), reverse=True)))
 
