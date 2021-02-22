@@ -25,12 +25,16 @@ class FightRegistrationCog(
         """
         Syncs the fight data on this channel
         """
+        full_sync = len(args) == 1 and args[0] == 'full'
+
+        log.info(f"Starting sync ({'full' if full_sync else 'since last recorded'}) Guild={ctx.guild.name}")
         await ctx.send("Sync in progress, likely to take a while. "
                        "Don't register any new fights or participation. "
                        "If you do then run this again...")
 
         await self.process_backlog(ctx.channel, full=len(args) == 1 and args[0] == 'full')
         await ctx.send("Done with sync")
+        log.info("Completed sync")
 
     @commands.Cog.listener()
     async def on_raw_message_delete(self, payload):
