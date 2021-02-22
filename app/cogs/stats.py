@@ -4,7 +4,7 @@ from app.cogs.base import BaseCog
 from app.models.core import Fight, Team
 import discord
 import datetime
-from app.util import send_embed
+from app.util import send_stats_embed
 import io
 import matplotlib as mpl
 mpl.use('Agg')
@@ -44,16 +44,16 @@ class StatsCog(
 
         fight_count = len(fights)
 
-        ans = [f"{team.capitalize()}: {how_many} ({100 * how_many / fight_count:.1f}%)"
-               for team, how_many in team_participation_count.items()]
-        await send_embed(ctx, f"Perc Fight Participation ({number_days} days)", "\n".join(ans))
+        xs = list(team_participation_count.keys())
+        ys = list(team_participation_count.values())
+
+        sorted_ys, sorted_xs = (list(t) for t in zip(*sorted(zip(ys, xs), reverse=True)))
+
+        ans = [(f"{team.capitalize()}", f"{how_many} ({100 * how_many / fight_count:.1f}%)")
+               for team, how_many in zip(sorted_xs, sorted_ys)]
+        await send_stats_embed(ctx, f"Perc Fight Participation ({number_days} days)", ans)
 
         if "-plot" in args:
-            xs = list(team_participation_count.keys())
-            ys = list(team_participation_count.values())
-
-            sorted_ys, sorted_xs = (list(t) for t in zip(*sorted(zip(ys, xs), reverse=True)))
-
             plt.bar(sorted_xs, sorted_ys, color='red', width=0.4)
 
             with io.BytesIO() as image_binary:
