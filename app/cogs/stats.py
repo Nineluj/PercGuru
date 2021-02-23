@@ -27,9 +27,9 @@ class StatsCog(
             try:
                 number_days = int(args[0])
             except ValueError:
-                number_days = 30
+                number_days = 7
         else:
-            number_days = 30
+            number_days = 7
 
         log.info(f"Getting stats for the past {number_days} days for server {ctx.guild.name}")
 
