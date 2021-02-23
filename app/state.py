@@ -172,7 +172,7 @@ class AppState:
         has_guild = self.check_has_guild(guild_id)
         if has_guild:
             guild = self.get_guild(guild_id)
-            ret = await fun(guild_id, *args)
+            ret = await fun(guild, *args)
             if ret is None:
                 return True
             else:
