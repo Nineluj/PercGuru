@@ -14,6 +14,10 @@ class FightRegistrationCog(
     BaseCog,
     name="Fights"
 ):
+    """
+    Cog for registering fights
+    """
+
     def __init__(self, *args, process_reacts=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.process_reacts = process_reacts
@@ -23,7 +27,7 @@ class FightRegistrationCog(
     @is_top_privilege()
     async def sync_data(self, ctx, *args):
         """
-        Syncs the fight data on this channel
+        Syncs the fight data on the channel in which this was called
         """
         full_sync = len(args) == 1 and args[0] == 'full'
 
@@ -38,6 +42,9 @@ class FightRegistrationCog(
 
     @commands.Cog.listener()
     async def on_raw_message_delete(self, payload):
+        """
+        Deletes fights when their message is deleted by a user.
+        """
         if not await self.state.is_whitelisted_channel(payload.guild_id, payload.channel_id):
             return
 

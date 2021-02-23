@@ -18,6 +18,7 @@ from app.cogs.memes import MemeCog
 
 TOKEN = getenv("BOT_TOKEN")
 LOG_FILE = getenv("LOG_FILE", "perc.log")
+# this could be an env variable
 TEST_GUILD_ID = 808797581547012146
 
 Job = namedtuple("Job", [])
@@ -54,6 +55,8 @@ for cog in [ConfigurationCog, StatsCog, ChannelsCog, MemeCog]:
     bot.add_cog(cog(*cog_args))
 
 
+# These are all discord.py lifecycle event functions to set up the
+# state and the database
 @bot.event
 async def on_connect():
     log.info("Starting database connection")

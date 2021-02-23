@@ -1,6 +1,5 @@
 """
-Knows how to save and retrieve information related to the configuration to the database through the objects
-in models.config
+Knows how to save and retrieve information related to the configuration to the database
 """
 from __future__ import annotations
 
@@ -10,13 +9,18 @@ from typing import Dict, Optional, List, Set
 from tortoise.exceptions import DoesNotExist, IntegrityError
 import logging
 
-from app.models.config import Guild, WhitelistedChannel
+from app.models.core import Guild, WhitelistedChannel
 
 
 log = logging.getLogger(__name__)
 
 
 class CachedGuildState:
+    """
+    Holds information about a guild (discord server) and knows how to talk to the
+    database to retrieve and save it as needed
+    """
+
     # Represents whether the bot has been set up for the guild
     is_setup: bool
     __team_names: List[str]
@@ -121,6 +125,9 @@ class CachedGuildState:
 
 
 class AppState:
+    """
+    Contains the entire configuration state for the guilds that this bot is a part of
+    """
     __guilds: Dict[int, CachedGuildState]
     __ready: bool
 
@@ -132,6 +139,7 @@ class AppState:
     async def load(self, reload=True):
         """
         Called when the state should get loaded. Use database objects to get the needed information.
+        Must be called before any other methods are used.
         """
         if reload:
             self.__guilds = dict()
@@ -158,17 +166,13 @@ class AppState:
     async def delegate(self, guild_id, fun, *args):
         """
         Runs the given function with the specified args on the GuildState object with the given id.
-        Does NOT check if the guild has been set up.
+        Does NOT check if the guild has been set up. Errors from that are clear enough
+        and should not occur after the bot has been configured.
         """
         has_guild = self.check_has_guild(guild_id)
         if has_guild:
             guild = self.get_guild(guild_id)
-
-            # TODO removing this might be bad?
-            # if not guild.is_setup:
-            #     return False
-
-            ret = await fun(self.get_guild(guild_id), *args)
+            ret = await fun(guild_id, *args)
             if ret is None:
                 return True
             else:

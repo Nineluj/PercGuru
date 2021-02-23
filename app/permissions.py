@@ -20,7 +20,7 @@ def fail():
 
 
 def is_top_privilege():
-    """A :func:`.check` that checks if the person invoking this command is privileged (bot author or privileged role)
+    """A :func:`.check` that checks if the person invoking this command is privileged (bot author or top privileged role)
     """
     async def predicate(ctx):
         if await ctx.bot.is_owner(ctx.author):

@@ -4,8 +4,7 @@ import tortoise.exceptions
 
 from discord.ext import commands
 from app.cogs.base import BaseCog
-from app.models.core import Fight, Team
-from app.models.config import Guild
+from app.models.core import Guild, Fight, Team
 
 log = logging.getLogger(__name__)
 # FIGHT_WIN_REACT = "☑️"
@@ -57,7 +56,9 @@ class ReactsCog(BaseCog):
 
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self, payload):
-        # Need to allow people fix mis-inputs (wrong alliance reaction)
+        """
+        Recomputes the participation for the given fight if a react has been removed
+        """
         if self.is_own_bot(payload.user_id):
             return
         if not await self.state.is_whitelisted_channel(payload.guild_id, payload.channel_id):
@@ -98,12 +99,6 @@ class ReactsCog(BaseCog):
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
-        """
-        Constraints:
-        - You only react for yourself, don't react for some other player
-            - !!! Don't react for another guild
-        - You don't mark lost fights as wins since they cannot be unmarked
-        """
         if self.is_own_bot(payload.member.id):
             return
         if not await self.state.is_whitelisted_channel(payload.guild_id, payload.channel_id):
@@ -120,7 +115,4 @@ class ReactsCog(BaseCog):
         channel = self.bot.get_channel(channel_id)
         message = await channel.fetch_message(message_id)
 
-        # if reaction == FIGHT_WIN_REACT:
-        #     await self.handle_fight_win(fight, message, ack=ack)
-        # else:
         await self.handle_other_react(fight, user, reaction, message, channel, ack=ack)

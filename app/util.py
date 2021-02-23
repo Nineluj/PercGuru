@@ -1,5 +1,4 @@
 import discord
-from discord.ext import commands
 
 
 async def send_embed(ctx, title, body):

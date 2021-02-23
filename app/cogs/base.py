@@ -14,6 +14,10 @@ ACK_TIME_S = 2
 
 
 class BaseCog(commands.Cog):
+    """
+    Abstract class which provides utility methods for working with the app state
+    and interacting with discord text channels
+    """
     def __init__(self, state: AppState, bot: discord.ext.commands.bot.Bot, **other):
         self.state = state
         self.bot = bot
@@ -24,6 +28,12 @@ class BaseCog(commands.Cog):
         return user_id == self.bot.user.id
 
     async def ack(self, message: discord.Message, keep=False):
+        """
+        Uses the ACK react to show that some action related to the message
+        has been processed. Keeps the ACK only for a limited amount of time by default.
+        :param message: The message to ACK
+        :param keep: If true, the ACK react remains on the message
+        """
         asyncio.create_task(self.__ack(message, keep))
 
     async def __ack(self, message: discord.Message, keep=False):

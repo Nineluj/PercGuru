@@ -1,3 +1,6 @@
+"""
+Module for setting up and stopping the connection to the database.
+"""
 from tortoise import Tortoise
 import asyncio
 import logging
@@ -8,7 +11,7 @@ log = logging.getLogger(__name__)
 async def init():
     await Tortoise.init(
         db_url="sqlite://db.sqlite3",
-        modules={"models": ["app.models.core", "app.models.config"]}
+        modules={"models": ["app.models.core"]}
     )
     await Tortoise.generate_schemas()
     log.info("Done making schemas")

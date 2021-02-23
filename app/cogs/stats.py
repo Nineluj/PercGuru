@@ -1,6 +1,5 @@
 from app.cogs.base import BaseCog
-from app.models.core import Fight, Team
-from app.models.config import Guild
+from app.models.core import Team, Guild
 from app.permissions import is_privileged
 
 import matplotlib.pyplot as plt

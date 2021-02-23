@@ -19,6 +19,9 @@ lines = [
 
 
 class MemeCog(BaseCog):
+    """
+    Cog that sets funny status messages on an interval. Optional.
+    """
     @commands.Cog.listener()
     async def on_ready(self):
         await self.set_new_status()
