@@ -72,3 +72,5 @@ class StatsCog(
 
                 file = discord.File(fp=image_binary, filename='plot.png')
                 await ctx.channel.send(content="Plot", file=file)
+
+            plt.clf()
