@@ -1,15 +1,18 @@
 from app.cogs.base import BaseCog
 from app.models.core import Team, Guild
 from app.permissions import is_privileged
+from app.util import send_stats_embed
 
 import matplotlib.pyplot as plt
 from discord.ext import commands
 import discord
-import datetime
-from app.util import send_stats_embed
 import io
+import logging
+from datetime import datetime, timedelta
 import matplotlib as mpl
 mpl.use('Agg')
+
+log = logging.getLogger(__name__)
 
 
 class StatsCog(
@@ -28,11 +31,10 @@ class StatsCog(
         else:
             number_days = 30
 
-        teams = await self.state.list_teams(ctx.guild.id)
+        log.info(f"Getting stats for the past {number_days} days for server {ctx.guild.name}")
 
-        now = datetime.datetime.now()
-        delta = datetime.timedelta(days=number_days)
-        min_dt = now - delta
+        teams = await self.state.list_teams(ctx.guild.id)
+        min_dt = datetime.utcnow() - timedelta(days=number_days)
 
         team_participation_count = {}
         fights = set()
@@ -41,6 +43,7 @@ class StatsCog(
             team = await Team.get(name=t, server=server)
 
             participations = 0
+
             async for fight in team.fights.filter(recorded__gte=min_dt):
                 fights.add(fight)
                 participations += 1
@@ -59,6 +62,8 @@ class StatsCog(
         await send_stats_embed(ctx, f"Perc Fight Participation ({number_days} days)", ans)
 
         if "-plot" in args:
+            plt.xticks(rotation='vertical')
+            plt.gcf().subplots_adjust(bottom=0.25)
             plt.bar(sorted_xs, sorted_ys, color='red', width=0.4)
 
             with io.BytesIO() as image_binary:

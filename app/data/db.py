@@ -8,9 +8,9 @@ import logging
 log = logging.getLogger(__name__)
 
 
-async def init():
+async def init(db_url="sqlite://db.sqlite3"):
     await Tortoise.init(
-        db_url="sqlite://db.sqlite3",
+        db_url=db_url,
         modules={"models": ["app.models.core"]}
     )
     await Tortoise.generate_schemas()
